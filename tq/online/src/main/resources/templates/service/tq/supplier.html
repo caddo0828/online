@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>供应商管理</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <style>
+        .container{
+            margin: 0px auto;
+            width: 98%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <table id="supplier" lay-filter="supplier"></table>
+</div>
+</body>
+<script th:inline="javascript">
+    var root=[[${root}]];
+    var layer;
+    var index;
+    var tableIndex;
+    layui.use(['table','layer','util'],function(){
+        layer = layui.layer;
+        var table = layui.table;
+        var util = layui.util;
+        var $ = layui.$;
+        var height=$(window).height()*0.9;
+        tableIndex=table.render({
+            elem:'#supplier',
+            url:root+'/tq/getSupplierInfo',
+            toolbar:'#toolbarDemo',
+            height:height,
+            cols:[
+                [
+                    {type:'numbers', width:'4%'},
+                    {field:"id",width:'10%',hide:true},
+                    {field:"name",width:'10%',title:"名称"},
+                    {field:"remark",width:'10%',title:"简介"},
+                    {field:"realname",width:'10%',title:"接待人"},
+                    {field:"create_time",width:'10%',title:"创建时间",templet:function(d){ return util.toDateString(d.create_time, "yyyy-MM-dd HH:mm:ss");}},
+                    {field:'operation',width:'10%', title: '操作',templet: '#barDemo'}
+                ]
+            ],
+            page: true,
+            parseData:function (data) {
+                return {
+                    code:0,
+                    msg:'',
+                    count:data.total,
+                    data:data.data
+                }
+            }
+        });
+
+        table.on('toolbar(supplier)',function(obj){
+            switch (obj.event){
+                case 'insertData':
+                    index=layer.open({
+                        type: 2,
+                        title: "新增供应商信息",
+                        area: ['640px', '465px'],
+                        shade:0,
+                        content:root+"/tq/addSupplierPage"
+                    });
+                    break;
+            }
+        });
+
+        table.on('tool(supplier)',function(obj){
+            switch (obj.event){
+                case 'edit':
+                    index=layer.open({
+                        type: 2,
+                        title: "修改供应商信息",
+                        area: ['640px', '465px'],
+                        shade:0,
+                        content:root+"/tq/updateSupplier?id="+obj.data.id
+                    });
+                    break;
+                case 'del':
+                    $.ajax({
+                        type:"post",
+                        url:root+"/tq/delSupplierInfo",
+                        data:{id:obj.data.id},
+                        dataType:"text",
+                        success:function(result){
+                            if(result=='success')
+                                layer.msg("删除成功",{icon:1,time:1000});
+                            else if(result=='fail')
+                                layer.msg("删除失败",{icon:2,time:1000});
+                            tableIndex.reload();
+                        },
+                        error:function(e){
+                            console.log(e);
+                        }
+                    });
+                    break;
+            }
+        });
+    });
+    function closeIndex(){
+        layer.close(index);
+        tableIndex.reload();
+    }
+</script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="insertData" >新增</button>
+    </div>
+</script>
+</html>

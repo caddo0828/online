@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="utf-8" />
+		<title>Sign In</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" th:href="@{/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" href="css/signin.css" th:href="@{/css/signin.css}"/>
+		<script type="application/javascript" src="js/jquery.js" th:src="@{/js/jquery.js}"></script>
+		<script type="application/javascript" src="js/bootstrap.min.js" th:src="@{/js/bootstrap.min.js}"></script>
+		<style>
+			 @media (min-width: 768px) {
+				.bd-placeholder-img-lg {
+					font-size: 3.5rem;
+				}
+			}
+		</style>
+	</head>
+	<body class="text-center">
+		<form action="service/main.html" method="post" class="form-sign" th:action="@{/main.do}">
+			<img class="form-img" src="img/logo.JPG" th:src="@{/img/logo.JPG}" alt="小白鼠" width="72" height="72"/>
+			<h1 class="h3 font-weight-normal">Please sign in</h1>
+			<p id="error-msg" th:text="${message}" style="color:red"></p>
+			<input type="text" name="username" class="form-control form-input" placeholder="Username" required="true"
+				   th:each="cookie :${#httpServletRequest.getCookies()}"
+				   th:if="${cookie.getName().equals('username')}"
+				   th:value="${cookie.getValue()}" />
+			<input type="password" name="password" class="form-control form-input" placeholder="Password" required="true"/>
+			<div class="checkbox">
+				<label>
+					<input type="checkbox" name="remeber" value="Remeber me"/>Remeber me
+				</label>
+			</div>
+			<button class="btn btn-lg btn-primary btn-block" type="submit">Sign In</button>
+			<p class="form-bottom">
+				© 2017-2019
+			</p>
+		</form>
+	</body>
+	<script>
+		$(function(){
+		    if($("input[name='username']").length==0){
+				$("#error-msg").after("<input type=\"text\" name=\"username\" class=\"form-control form-input\" placeholder=\"Username\" required=\"true\"/>");
+			}
+		})
+	</script>
+</html>

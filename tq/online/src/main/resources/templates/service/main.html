@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>主页面</title>
+		<link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+		<style>
+			.main-container {
+				margin: 0px;
+				padding: 0px;
+			}
+
+			input[name=search] {
+				outline: none;
+			}
+			#body_home {
+				min-width: 20px;
+				width: 30px;
+			}
+
+			#body_home>i {
+				margin: 0px;
+				font-size: 20px;
+				color: #299;
+			}
+
+			#body_home:hover {
+				background-color: #fff;
+			}
+		</style>
+	</head>
+	<body class="layui-layout-body">
+		<div class="layui-layout layui-layout-admin">
+			<!-- 头部区域-->
+			<div id="head" class="layui-header">
+				<div class="layui-main">
+					<a href="#" class="layui-logo"><img src="../img/logo.png" th:src="@{/img/logo.png}" width="82px" /></a>
+					<ul class="layui-nav layui-layout-left">
+						<!-- <li class="layui-nav-item"><a href="#">选项二</a></li>
+						<li class="layui-nav-item"><a href="#">选项二</a></li>
+						<li class="layui-nav-item"><a href="#">选项二</a></li>
+						<li class="layui-nav-item"><a href="#">选项二</a></li> -->
+						<li class="layui-nav-item  layui-hide-xs">
+							<a href="javascript:;" title="跳转社区">
+								<i class="layui-icon layui-icon-website"></i>
+							</a>
+						</li>
+						<li class="layui-nav-item  layui-hide-xs">
+							<a href="javascript:;" title="刷新">
+								<i class="layui-icon layui-icon-refresh-3"></i>
+							</a>
+						</li>
+					</ul>
+					<ul class="layui-nav layui-layout-right">
+						<li class="layui-nav-item">
+                            <a href="javascript:;">
+							    <img src="../img/logo.JPG" id="portrait" class="layui-nav-img" th:src="@{/img/}"><span th:text="${userInfo.username}"></span>
+                            </a>
+                            <dl class="layui-nav-child">
+                                <dd><a href="javascript:;" onclick="basicInfo()">个人信息</a></dd>
+                                <dd><a href="#" th:href="@{/logout}">退出</a></dd>
+                            </dl>
+						</li>
+					</ul>
+				</div>
+			</div>
+
+			<!-- 左侧边栏 -->
+
+			<div class="layui-side layui-side-menu layui-bg-black">
+				<div class="layui-side-scroll">
+					<ul class="layui-nav layui-nav-tree">
+						<li class="layui-nav-item" th:each="role : ${roles}">
+							<a href="#">
+								<i class="layui-icon layui-icon-add-1"></i>
+								<cite th:text="${role.name}">列表一</cite>
+							</a>
+							<dl class="layui-nav-child" th:each="son : ${role.son}">
+								<a target="main" href="" th:href="${son.url}" th:text="${son.name}">活动一</a>
+							</dl>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<!-- 选项卡 -->
+
+			<!-- 主体 -->
+			<div class="layui-body">
+				<iframe name="main" src="https://www.layui.com/admin/std/dist/views/home/console.html" frameborder="0" class="layadmin-iframe"
+				 width="100%" height="99%"></iframe>
+			</div>
+
+			<div class="layui-footer">
+				<div class="layui-main">
+					<p><span>版权归属&nbsp;</span>&copy; 2019 <a href="http://www.layui.com/">layui.com</a> MIT license</p>
+				</div>
+			</div>
+
+		</div>
+		<script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+		<script th:inline="javascript">
+			var layer, form, element,$;
+			layui.use(['layer', 'form', 'element'], function() {
+				layer = layui.layer;
+				form = layui.form;
+				element = layui.element;3
+				$=layui.$;
+				var image=[[${userInfo.image}]];
+                $("#portrait").attr("src",$("#portrait").attr("src")+image);
+			});
+            var root=[[${root}]];
+			function basicInfo(){
+                layer.open({
+                    type: 2,
+                    title: "个人信息",
+                    area: ['70%', '70%'],
+                    scrollbar:false,
+                    content: root+"/user/toUserInfo" //iframe的url，no代表不显示滚动条
+                });
+			}
+			//更新头像
+			function updateImg(imgname){
+                $("#portrait").attr("src",root+"/img/"+imgname);
+			}
+		</script>
+	</body>
+</html>

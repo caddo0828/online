@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新增供应商基本信息</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <style>
+        .container{
+            margin: 0px auto;
+            margin-top:10px;
+            width: 98%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <form class="layui-form" action="" lay-filter="supplier">
+        <div class="layui-form-item">
+            <label class="layui-form-label">名称：</label>
+            <div class="layui-input-block" style="width:300px;">
+                <input type="text" name="name" autocomplete="off" placeholder="请输入名称" class="layui-input" lay-verify="required">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">接待人员:</label>
+            <div class="layui-input-block" style="width:300px;">
+                <select name="person" lay-filter="person">
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">基本介绍：</label>
+            <div class="layui-input-block" style="width:300px;">
+                <textarea placeholder="请输入内容" name="remark" class="layui-textarea"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button type="submit" lay-submit class="layui-btn" lay-filter="*" >立即提交</button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+<script th:inline="javascript">
+    var root=[[${root}]];
+    layui.use(['form'],function(){
+        var form=layui.form;
+        var $=layui.$;
+        $.ajax({
+            type:"post",
+            url:root+"/tq/getRealNameInfo",
+            dataType:"json",
+            success:function(data){
+                $.each(data,function(index,element){
+                    $("select[name=person]").append("<option value='"+element.id+"'>"+element.realname+"</option>");
+                });
+                form.render("select");
+            },
+            error:function(e){
+                console.log(e);
+            }
+        });
+
+
+        form.on('submit(*)',function(data){
+            console.log(data.field);
+            $.ajax({
+                type:"post",
+                url:root+"/tq/addSupplierInfo",
+                data:data.field,
+                dataType:"text",
+                success:function(result){
+                    if(result=='success') {
+                        layer.msg("添加成功", {icon: 1, time: 1000});
+                        setTimeout(function(){window.parent.closeIndex()},1000);
+                    }
+                    else if(result=='fail')
+                        layer.msg("添加失败",{icon:2,time:1000});
+                },
+                error:function(e){
+                    console.log(e);
+                }
+            });
+            return false;
+        });
+    });
+</script>
+</html>

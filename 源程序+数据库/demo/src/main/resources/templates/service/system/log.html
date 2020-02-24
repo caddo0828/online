@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>查看日志</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <style>
+        .container{
+            margin: 0px auto;
+            width: 98%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <table id="log" lay-filter="log"></table>
+</div>
+</body>
+<script th:inline="javascript">
+    var root=[[${root}]];
+    layui.use(['table'],function(){
+        var table=layui.table;
+        var $=layui.$;
+        var height=$(window).height()*0.9;
+        table.render({
+           elem:"#log",
+            url:root+'/system/getLogInfo',
+            height:height,
+            page: true,
+            cols:[
+                [
+                    {type:'numbers', width:'4%'},
+                    {type: 'checkbox', width:'4%'},
+                    {field:'image',width:'6%',title:'头像',templet:function(d){
+                        return "<div><image width='30px' src='"+root+"/img/"+d.image+"' /></div>";
+                        }},
+                    {field:'username',width:'12%',title:'用户名'},
+                    {field:'email',width:'16%',title:'邮箱'},
+                    {field:'content',width:'30%',title:'操作内容'},
+                    {field:'time',width:'16%',title:'操作时间'},
+                    {field:'ip',width:'12.5%',title:'IP地址'},
+                ]
+            ],
+            parseData:function(result){
+                return {
+                    code:0,
+                    msg:"",
+                    count:result.total,
+                    data:result.data
+                };
+            }
+        });
+
+    });
+</script>
+</html>

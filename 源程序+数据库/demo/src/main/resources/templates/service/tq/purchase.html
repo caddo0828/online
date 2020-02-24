@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>进货页面</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <style>
+        .container{
+            margin: 0px auto;
+            width: 98%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
+        <ul class="layui-tab-title">
+            <li class="layui-this">未完成订单</li>
+            <li>已完成订单</li>
+            <li>已取消订单</li>
+        </ul>
+        <div class="layui-tab-content" style="height: 100px;">
+            <div class="layui-tab-item layui-show">
+                <div id="no">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <button class="layui-btn" onclick="add()">新增订单</button>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">时间：</label>
+                            <div class="layui-input-inline" style="width: 200px;">
+                                <input type="text" class="layui-input" name="start" placeholder="yyyy-MM-dd">
+                            </div>
+                            <div class="layui-form-mid">-</div>
+                            <div class="layui-input-inline" style="width: 200px;">
+                                <input type="text" class="layui-input" name="end" placeholder="yyyy-MM-dd">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <label class="layui-form-label">关键字查找:</label>
+                            <div class="layui-input-inline" style="width: 200px;">
+                                <input type="text" name="content" placeholder="商品名称" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <button class="layui-btn" onclick="searchN()">查找</button>
+                        </div>
+                    </div>
+                    <table id="npur" lay-filter="npur"></table>
+                </div>
+            </div>
+            <div class="layui-tab-item">
+                <div id="yes">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">时间：</label>
+                            <div class="layui-input-inline" style="width: 200px;">
+                                <input type="text" class="layui-input" name="start" placeholder="yyyy-MM-dd">
+                            </div>
+                            <div class="layui-form-mid">-</div>
+                            <div class="layui-input-inline" style="width: 200px;">
+                                <input type="text" class="layui-input" name="end" placeholder="yyyy-MM-dd">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <label class="layui-form-label">关键字查找:</label>
+                            <div class="layui-input-inline" style="width: 200px;">
+                                <input type="text" name="content" placeholder="商品名称" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <button class="layui-btn" onclick="searchY()">查找</button>
+                        </div>
+                    </div>
+                    <table id="ypur" lay-filter="ypur"></table>
+                </div>
+            </div>
+            <div class="layui-tab-item">
+                <div id="cancel">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">时间：</label>
+                            <div class="layui-input-inline" style="width: 200px;">
+                                <input type="text" class="layui-input" name="start" placeholder="yyyy-MM-dd">
+                            </div>
+                            <div class="layui-form-mid">-</div>
+                            <div class="layui-input-inline" style="width: 200px;">
+                                <input type="text" class="layui-input" name="end" placeholder="yyyy-MM-dd">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <label class="layui-form-label">关键字查找:</label>
+                            <div class="layui-input-inline" style="width: 200px;">
+                                <input type="text" name="content" placeholder="商品名称" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <button class="layui-btn" onclick="searchC()">查找</button>
+                        </div>
+                    </div>
+                    <table id="cpur" lay-filter="cpur"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script th:inline="javascript">
+    var root=[[${root}]];
+    var tableIndex;
+    var layer;
+    var index;
+    var table;
+    var $;
+    layui.use(['element','table','util','form','laydate','layer'],function(){
+        var element=layui.element;
+        table=layui.table;
+        $=layui.$;
+        var util=layui.util;
+        var form=layui.form;
+        var laydate=layui.laydate;
+        layer=layui.layer;
+        laydate.render({
+            elem:"input[name=start]",
+            type:"datetime"
+        });
+        laydate.render({
+            elem:"input[name=end]",
+            type:"datetime"
+        });
+        tableIndex=table.render({
+            elem:"#npur",
+            url:root+"/tq/getPurchaseN",
+            where:{status:0},
+            cols:[
+                [
+                    {type:"numbers",title:"序号",width:"4%"},
+                    {field:"id",width:'10%',hide:true},
+                    {field:"model_name",width:'10%',title:"商品类型"},
+                    {field:"name",width:'10%',title:"商品名称"},
+                    {field:"sup_name",width:'10%',title:"供应商家"},
+                    {field:"number",width:'10%',title:"数量"},
+                    {field:"price",width:'10%',title:"单价(元)"},
+                    {field:"all",width:'10%',title:"总价(元)",templet:function(d){ return (d.number*d.price).toFixed(2);}},
+                    {field:"start_time",width:'10%',title:"订单开始时间",templet:function(d){ return util.toDateString(d.start_time, "yyyy-MM-dd HH:mm:ss");}},
+                    {field:"realname",width:'10%',title:"接待人"},
+                    {field:'operation',width:'10%', title: '操作',templet: '#barDemo'}
+                ]
+            ],
+            page:true,
+            parseData:function (data) {
+                return {
+                    code:0,
+                    msg:'',
+                    count:data.total,
+                    data:data.data
+                }
+            }
+        });
+
+        table.on('tool(npur)',function (obj) {
+            switch (obj.event) {
+                case 'correct':
+                    layer.confirm('确定吗?', {icon: 3, title:'提示'}, function(index){
+                        $.ajax({
+                            type:"post",
+                            url:root+"/order/confirmOrder",
+                            data:{id:obj.data.id,status:1},
+                            dataType:"text",
+                            success:function (result) {
+                                if(result=='success')
+                                    layer.msg("确认成功",{icon:1,time:1000});
+                                else if(result=='fail')
+                                    layer.msg("确认失败",{icon:2,time:1000});
+                                setTimeout(function () {
+                                    closeIndex();
+                                },1000)
+                            },
+                            error:function (e) {
+                                console.log(e);
+                            }
+                        })
+                        layer.close(index);
+                    });
+                    break;
+                case 'del':
+                    layer.confirm('确定取消吗?', {icon: 3, title:'提示'}, function(index){
+                        $.ajax({
+                            type:"post",
+                            url:root+"/order/confirmOrder",
+                            data:{id:obj.data.id,status:2},
+                            dataType:"text",
+                            success:function (result) {
+                                if(result=='success')
+                                    layer.msg("取消成功",{icon:1,time:1000});
+                                else if(result=='fail')
+                                    layer.msg("取消失败",{icon:2,time:1000});
+                                setTimeout(function () {
+                                    closeIndex();
+                                },1000)
+                            },
+                            error:function (e) {
+                                console.log(e);
+                            }
+                        })
+                        layer.close(index);
+                    });
+                    break;
+            }
+        });
+
+
+        table.render({
+            elem:"#ypur",
+            url:root+"/tq/getPurchaseN",
+            where:{status:1},
+            cols:[
+                [
+                    {type:"numbers",title:"序号",width:"4%"},
+                    {field:"id",width:'10%',hide:true},
+                    {field:"model_name",width:'10%',title:"商品类型"},
+                    {field:"name",width:'10%',title:"商品名称"},
+                    {field:"sup_name",width:'10%',title:"供应商家"},
+                    {field:"number",width:'10%',title:"数量"},
+                    {field:"price",width:'10%',title:"单价(元)"},
+                    {field:"all",width:'10%',title:"总价(元)",templet:function(d){ return (d.number*d.price).toFixed(2);}},
+                    {field:"start_time",width:'10%',title:"订单开始时间",templet:function(d){ return util.toDateString(d.start_time, "yyyy-MM-dd HH:mm:ss");}},
+                    {field:"end_time",width:'10%',title:"订单确认时间",templet:function(d){ return util.toDateString(d.end_time, "yyyy-MM-dd HH:mm:ss");}},
+                    {field:"realname",width:'10%',title:"接待人"}
+                ]
+            ],
+            page:true,
+            parseData:function (data) {
+                return {
+                    code:0,
+                    msg:'',
+                    count:data.total,
+                    data:data.data
+                }
+            }
+        });
+
+        table.render({
+            elem:"#cpur",
+            url:root+"/tq/getPurchaseN",
+            where:{status:2},
+            cols:[
+                [
+                    {type:"numbers",title:"序号",width:"4%"},
+                    {field:"id",width:'10%',hide:true},
+                    {field:"model_name",width:'10%',title:"商品类型"},
+                    {field:"name",width:'10%',title:"商品名称"},
+                    {field:"sup_name",width:'10%',title:"供应商家"},
+                    {field:"number",width:'10%',title:"数量"},
+                    {field:"price",width:'10%',title:"单价(元)"},
+                    {field:"all",width:'10%',title:"总价(元)",templet:function(d){ return (d.number*d.price).toFixed(2);}},
+                    {field:"start_time",width:'10%',title:"订单开始时间",templet:function(d){ return util.toDateString(d.start_time, "yyyy-MM-dd HH:mm:ss");}},
+                    {field:"end_time",width:'10%',title:"订单取消时间",templet:function(d){ return util.toDateString(d.end_time, "yyyy-MM-dd HH:mm:ss");}},
+                    {field:"realname",width:'10%',title:"接待人"}
+                ]
+            ],
+            page:true,
+            parseData:function (data) {
+                return {
+                    code:0,
+                    msg:'',
+                    count:data.total,
+                    data:data.data
+                }
+            }
+        });
+    });
+
+    function add(){
+        index=layer.open({
+            type: 2,
+            title: "新增订单信息",
+            area: ['960px', '750px'],
+            shade:0,
+            content:root+"/tq/addPurchasePage"
+        });
+    }
+
+    function closeIndex(){
+        layer.close(index);
+        table.reload('npur');
+        table.reload('ypur');
+        table.reload('cpur');
+    }
+
+    function searchN(){
+        var startT=$("#no input[name=start]").val();
+        var endT=$("#no input[name=end]").val();
+        var content=$("#no input[name=content]").val();
+        table.reload('npur',{where:{startT:startT,endT:endT,content:content}});
+    }
+
+    function searchY(){
+        var startT=$("#yes input[name=start]").val();
+        var endT=$("#yes input[name=end]").val();
+        var content=$("#yes input[name=content]").val();
+        table.reload('ypur',{where:{startT:startT,endT:endT,content:content}});
+    }
+
+    function searchC(){
+        var startT=$("#cancel input[name=start]").val();
+        var endT=$("#cancel input[name=end]").val();
+        var content=$("#cancel input[name=content]").val();
+        table.reload('cpur',{where:{startT:startT,endT:endT,content:content}});
+    }
+</script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="correct">确认订单</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">取消订单</a>
+</script>
+</html>

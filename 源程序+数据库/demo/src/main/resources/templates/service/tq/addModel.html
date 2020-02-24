@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新增商品类型</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <style>
+        .container{
+            margin: 0px auto;
+            margin-top:10px;
+            width: 98%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="layui-tab layui-tab-brief">
+        <ul class="layui-tab-title">
+            <li class="layui-this">新增商品类型</li>
+            <li>新增隶属类型</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <form class="layui-form" action="" lay-filter="good">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">商品类型：</label>
+                        <div class="layui-input-block" style="width:300px;">
+                            <input type="text" name="name" required  placeholder="请输入名称" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">隶属类型：</label>
+                        <div class="layui-input-block" style="width:300px;">
+                            <select name="model_id" lay-verify="required">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">简介：</label>
+                        <div class="layui-input-block" style="width:300px;">
+                            <textarea placeholder="请输入内容" name="remark" class="layui-textarea"></textarea>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit lay-filter="goods">保存</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="layui-tab-item">
+                <form class="layui-form" action="">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">隶属类型：</label>
+                        <div class="layui-input-block" style="width:300px;">
+                            <input type="text" name="model" required  placeholder="请输入名称" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit lay-filter="model">保存</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script th:inline="javascript">
+    var root=[[${root}]];
+    var $;
+    layui.use(['element','form'],function(){
+        var element=layui.element;
+        var form=layui.form;
+        var layer=layui.layer;
+        $=layui.$;
+
+        form.on('submit(model)',function(obj){
+            $.ajax({
+                type:"post",
+                url:root+"/tq/addModelInfo",
+                data:obj.field,
+                dataType:"text",
+                success:function(result){
+                    if(result=='success')
+                        layer.msg("保存成功",{icon:1,time:1000});
+                    else if(result=='fail')
+                        layer.msg("保存失败",{icon:2,time:1000});
+                },
+                error:function(e){
+                    console.log(e);
+                }
+            });
+            return false;
+        });
+
+
+        $.ajax({
+            type:"post",
+            url:root+"/tq/getModelInfo",
+            dataType:"json",
+            success:function(result){
+                $.each(result,function (index,element) {
+                    $("select[name=model_id]").append("<option value='"+element.id+"'>"+element.model_name+"</option>")
+                });
+                form.render("select");
+            },error:function (e) {
+                console.log(e);
+            }
+        })
+
+
+        form.on("submit(goods)",function (obj) {
+            $.ajax({
+                type:"post",
+                url:root+"/tq/addGoodsModel",
+                data:obj.field,
+                dataType:"text",
+                success:function(result){
+                    if(result=='success')
+                        layer.msg("保存成功",{icon:1,time:1000});
+                    else if(result=='fail')
+                        layer.msg("保存失败",{icon:2,time:1000});
+                    setTimeout(function () {
+                        window.parent.closeIndex();
+                    },1000)
+                },
+                error:function(e){
+                    console.log(e);
+                }
+            });
+            return false;
+        });
+
+    });
+</script>
+</html>

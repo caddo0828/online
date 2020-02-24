@@ -1,0 +1,31 @@
+1、电脑配件供应商家管理	tq_supplier(id,name,remark,create_time,user_id,is_del)
+	供应商家列表(名称，接待人员，基本介绍，加入时间，信用度，交易次数，操作--修改、删除)
+	新增供应商家(名称，接待人员)
+	
+	
+	
+	
+2、代理出售情况 tq_sell(id,business_id,goods_id,number,price,user_id,create_time)
+	展示出售情况(商品名称，出售数量，售价，出售时间，销售人员,出售商家名称)
+	
+	
+
+3、进货情况 tq_purchase(id,sup_id,start_time,end_time,sup_name,sup_number,sup_price,is_accept)
+	展示商家供应情况(供应商，货品名称，数量，单价，开始供应时间，约定时间，接待人员,是否已收货)
+
+	
+	
+4、当前库存情况
+	展示库存剩余货品
+		(商品类型，商品数量，)
+		(供应商家，货品名称，剩余数量，单价)
+		
+		
+		
+5、出售商家管理 tq_business(id,name,create_time,place,longitude,latitude)
+	展示商家(名称，地点，销售总量，交易次数，创建时间)
+
+	
+	
+	
+6、商品类型 tq_goods(id,name,model,mark)

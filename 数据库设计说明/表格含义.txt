@@ -1,0 +1,120 @@
+1、on_log（日志表）
+记录当前用户在登录系统后访问的具体菜单栏，执行了哪些操作,记录当前日志信息。
+id           用户编号
+email        用户邮箱号
+content      执行的具体操作内容
+time         访问时间
+ip           访问ip地址
+
+2、on_role（父角色表）
+赋予系统用户角色，根据角色获取系统访问权限。
+role_id       角色id        
+role_name     角色名
+is_run        当前角色是否可行，0 可行  1 不可行
+create_time   角色创建时间
+
+
+3、on_role_template（子角色表）
+根据角色的id获取当前子模块id，加载模块信息及操作。
+id            id
+role_id       角色id
+template_id   子模块id
+
+
+4、on_template_p（父模块信息表）
+父模块详细信息表
+t_p_id        父模块id
+t_p_name      模块名
+is_del        模块是否可用，0 可用  1 不可用
+
+
+5、on_template_s（子模块信息表）
+子模块详细信息表
+t_s_id        子模块id
+t_s_name      模块名
+t_s_url       模块访问路径
+is_del        是否可用，0 可用 1 不可用
+t_parent_id   父模块id
+
+6、on_user（用户表）
+系统访问用户详细信息表
+id           用户id 
+username     用户名
+password     登录密码
+email        邮箱（登录账号名）
+role_id      角色id
+image        头像
+create_time  创建时间
+gender       性别
+realname     真实姓名
+birthady     生日
+
+
+7、tq_business（销售商家管理）
+展示销售商家信息
+id           id
+name         商家名称
+create_time  商户入驻系统时间
+place        商家地址
+remark       简介
+is_del       是否可用，0 可用  1 不可用
+
+
+8、tq_goods （商品） 
+商品所对应的商品类型信息
+id           id
+name         商品名
+model_id     类型id
+mark         商品简介
+
+
+9、tq_goods_model（商品类型表）
+商品类型信息
+id           id
+model_name   类型名称
+create_time  创建时间
+
+
+10、tq_purchase（进货情况） 
+展示商家供应货物存储入库的情况(供应商，货品名称，数量，单价，开始供应时间，约定时间，接待人员,是否已收货)
+id           id
+sup_id       供应商id
+start_time   供应时间
+end_time     结束时间
+sup_name     供应商名称
+sup_number   供应商编号
+sup_price    供应价格
+is_accept    是否已收货，0  1  2 
+
+
+11、tq_sell （销售情况）
+展示货品销售情况
+id             id
+business_id    销售商家id
+goods_id       货品id
+sup_id         供应商id
+number         销售数量
+price          单价
+user_id        用户id（执行销售操作信息）
+start_time     销售开始时间
+end_time       销售结束时间
+is_accept      是否已收货  0  1  2 
+	
+	
+12、tq_supplier （电脑配件供应商家管理）
+供应商家列表(名称，接待人员，基本介绍，加入时间，信用度，交易次数，操作--修改、删除)
+新增供应商家(名称，接待人员)
+id             id
+name           供应商名称
+remark         基本介绍
+create_time    创建时间
+user_id        用户id（操作供应商信息）
+is_del         是否删除，0  删除 1 未删除
+	
+	
+
+	
+13、当前库存情况
+	展示库存剩余货品
+		(商品类型，商品数量，)
+		(供应商家，货品名称，剩余数量，单价)	

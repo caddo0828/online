@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>修改商品类型</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <style>
+        .container{
+            margin: 0px auto;
+            margin-top:10px;
+            width: 98%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <form class="layui-form" action="" lay-filter="model">
+        <input type="hidden" name="id" />
+        <div class="layui-form-item">
+            <label class="layui-form-label">商品类型：</label>
+            <div class="layui-input-block" style="width:450px;">
+                <input type="text" name="name" required  placeholder="请输入名称" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">隶属类型：</label>
+            <div class="layui-input-block" style="width:450px;">
+                <select name="model_id" lay-verify="required">
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">简介：</label>
+            <div class="layui-input-block" style="width:450px;">
+                <textarea placeholder="请输入内容" name="mark" class="layui-textarea"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="goods">保存</button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+<script th:inline="javascript">
+    var root=[[${root}]];
+    var id=[[${id}]];
+    var $;
+    layui.use(['form'],function() {
+        var form = layui.form;
+        var layer = layui.layer;
+        $ = layui.$;
+
+        $.ajax({
+            type: "post",
+            url: root + "/tq/getModelInfo",
+            async:false,
+            dataType: "json",
+            success: function (result) {
+                $.each(result, function (index, element) {
+                    $("select[name=model_id]").append("<option value='" + element.id + "'>" + element.model_name + "</option>")
+                });
+                form.render("select");
+            }, error: function (e) {
+                console.log(e);
+            }
+        });
+
+        $.ajax({
+            type: "post",
+            url:root+"/tq/getModelById",
+            data:{id:id},
+            dataType: "json",
+            success:function(result){
+                form.val("model",result);
+            },
+            error:function(e){
+                console.log(e);
+            }
+        });
+
+        form.on("submit(goods)",function(){
+            $.ajax({
+                type:"post",
+                data:form.val("model"),
+                url:root+"/tq/updateModelById",
+                dataType:"text",
+                success:function(result){
+                    if(result=='success')
+                        layer.msg("保存成功",{icon:1,time:1000});
+                    else if(result=='fail')
+                        layer.msg("保存失败",{icon:2,time:1000});
+                    setTimeout(function () {
+                        window.parent.closeIndex();
+                    },1000)
+                },
+                error:function(e){
+                    console.log(e);
+                }
+            });
+            return false;
+        });
+
+    });
+</script>
+</html>

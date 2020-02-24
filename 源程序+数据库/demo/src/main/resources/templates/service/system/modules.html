@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>模块管理</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <style>
+        .container {
+            margin: 15px;
+            /*background: #efefef;*/
+            height:100%;
+        }
+        .btn{
+            padding:5px;
+        }
+        #left_main{
+            width:30%;
+            margin:10px;
+            padding:10px;
+        }
+        .divider{
+            border:1px #ededed solid;
+            display: inline-block;
+            min-height: 425px;
+            height:100%;
+        }
+        .manager_body{
+            width:100%;height:100%;
+        }
+        .manager_body > * {
+            float: left;
+        }
+        #right_detail{
+            padding-left:5px;
+            width: 50%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="btn">
+        <button id="addm" class="layui-btn layui-btn-radius">新增</button>
+    </div>
+    <fieldset class="layui-elem-field layui-field-title">
+        <legend>模块信息</legend>
+    </fieldset>
+    <div class="manager_body">
+        <div id="left_main"></div>
+        <div class="divider"></div>
+        <div id="right_detail">
+            <div class="layui-tab layui-tab-brief">
+                <ul class="layui-tab-title">
+                    <li class="layui-this">基本信息</li>
+                    <li>角色赋权</li>
+                </ul>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show d_show">
+                        <button class="layui-btn" onclick="saveInfo()">保存</button>
+                        <button class="layui-btn layui-btn-danger m_del" onclick="delModule()">删除</button>
+                        <form class="layui-form" action="" style="margin-top: 10px"lay-filter="formTest">
+                            <input type="hidden" name="id"/>
+                            <div class="layui-form-item parent">
+                                <label class="layui-form-label">父模块名称</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="p_name" placeholder="请输入名称" style="width: 200px" class="layui-input"/>
+                                </div>
+                            </div>
+                            <div class="layui-form-item child">
+                                <label class="layui-form-label">子模块名称</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="s_name" placeholder="请输入名称" style="width: 200px" class="layui-input"/>
+                                </div>
+                            </div>
+                            <div class="layui-form-item child">
+                                <label class="layui-form-label">选择父模块</label>
+                                <div class="layui-input-block" style="width: 200px">
+                                    <select name="pmodules" style="width: 200px">
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-form-item child">
+                                <label class="layui-form-label">URL路径</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="url" placeholder="URL" style="width: 200px" class="layui-input"/>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="layui-tab-item d_show">
+                        <button class="layui-btn" onclick="saveRoleInfo()">保存</button>
+                        <form class="layui-form" action="" style="margin-top:10px">
+                            <div class="layui-form-item">
+                                <fieldset class="layui-elem-field layui-field-title">
+                                    <legend class="this_title">模块信息</legend>
+                                </fieldset>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">可选角色：</label>
+                                <div class="layui-input-block" id="checkbox">
+                                    <input type="checkbox" name="like[read]" title="阅读" checked>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    var $;
+    var root=[[${root}]];
+    var form;
+    var d_html;
+    var d_role;
+    var index;
+    layui.use(['tree','layer','element'], function(){
+        var layer=layui.layer;
+        var tree = layui.tree;
+        var element=layui.element;
+        form=layui.form;
+        var role=decodeURIComponent([[${roles}]]);
+        $=layui.$;
+        var index;
+        role=JSON.parse(role);
+        //渲染
+        var inst1 = tree.render({
+            elem: '#left_main',  //绑定元素
+            id:1,
+            data: menu(role),
+            isJump:true,
+            click: function(obj){
+                managerhref(obj.data); //得到当前点击的节点数据
+            }
+        });
+        //新增按钮
+        $("#addm").click(function () {
+            index=layer.open({
+                type: 2,
+                title: "新增模块",
+                area: ['540px', '365px'],
+                shade:0,
+                content:root+"/system/addmodule"
+            });
+        });
+        d_html=$(".d_show:eq(0)").html();
+        d_role=$(".d_show:eq(1)").html();
+        $(".d_show").html("无");
+    });
+    //关闭模态窗口
+    function closeIndex(){
+        layer.close(index);
+    }
+    function menu(obj){
+        var datas=new Array();
+        for(var i=0;i<obj.length;i++){
+            var child=new Array();
+            for(var j=0;j<obj[i].son.length;j++){
+                var children={
+                    title:obj[i].son[j].name,
+                    _id:obj[i].son[j].id,
+                    _url:obj[i].son[j].url,
+                    _parent_id:obj[i].son[j].parent_id,
+                    _type:"children",
+                    spread:true
+                }
+                child[j]=children;
+            }
+            var data={
+                title:obj[i].name,
+                _id:obj[i].id,
+                _type:"parent",
+                spread:true,
+                children:child
+            }
+            datas[i]=data;
+        }
+        return datas;
+    }
+    function managerhref(obj){
+        $(".d_show:eq(0)").html(d_html);
+        if(obj._type=='parent'){
+            $(".d_show:eq(1)").html("无");
+            $(".parent").show();
+            $(".child").hide();
+            $("input[name=id]").val(obj._id+"_"+obj._type);
+            $("input[name=p_name]").val(obj.title);
+            if(obj.children.length!=0){
+                $(".m_del").remove();
+            }
+        }else if(obj._type=='children'){
+            $(".d_show:eq(1)").html(d_role);
+            $(".parent").hide();
+            $(".child").show();
+            $("input[name=id]").val(obj._id+"_"+obj._type);
+            $("input[name=s_name]").val(obj.title);
+            $(".this_title").text("当前模块："+obj.title);
+            $("input[name=url]").val(obj._url.replace(root,""));
+            $.ajax({//获取基本信息
+                type:"post",
+                url:root + "/system/getParentModules",
+                dataType:"json",
+                success:function(data){
+                    $("select[name=pmodules]").html("");
+                    $("select[name=pmodules]").append("<option value=\"\"></option>");
+                    $.each(data,function(index,element){
+                        $("select[name=pmodules]").append("<option value='"+element.t_p_id+"'>"+element.t_p_name+"</option>");
+                    });
+                    form.val("formTest", {
+                        "pmodules": obj._parent_id
+                    });
+                    form.render();
+                },
+                error:function(e){
+                    console.log(e);
+                }
+            });
+            $.ajax({//赋予权限
+                type:"post",
+                url:root + "/system/getRolesById",
+                data:{id:$("input[name=id]").val()},
+                dataType:"json",
+                success:function(data){
+                    $("#checkbox").html("");
+                    $.each(data,function(index,element){
+                        if(element.id==undefined || element.id==null || element.id=='')
+                            $("#checkbox").append("<input type=\"checkbox\" name='admin' value='"+element.role_id+"' title='"+element.role_name+"'>");
+                        else
+                            $("#checkbox").append("<input type=\"checkbox\" name='admin' value='"+element.role_id+"' title='"+element.role_name+"' checked>");
+                    });
+                    form.render();
+                },
+                error:function(e){
+                    console.log(e);
+                }
+            });
+        }
+    }
+    function delModule(){
+        $.ajax({
+            type:"post",
+            data:{id:$("input[name=id]").val()},
+            url:root+"/system/deleteSonModule",
+            success:function(data){
+                if(data=='success')
+                    layer.msg("删除成功",{shade:0.3});
+                else
+                    layer.msg("删除失败",{shade:0.3});
+                setTimeout(function () {
+                    location.reload();
+                },1000);
+            },
+            error:function(e){
+                console.log(e);
+            }
+        });
+    }
+    function saveInfo(){
+        $.ajax({
+            type:"post",
+            data:{id:$("input[name=id]").val(),p_name:$("input[name=p_name]").val(),s_name:$("input[name=s_name]").val(),pmodules:$("select[name=pmodules]").val(),url:$("input[name=url]").val()},
+            url:root+"/system/updateModule",
+            success:function(data){
+                if(data=='success')
+                    layer.msg("更新成功",{shade:0.3});
+                else
+                    layer.msg("更新失败",{shade:0.3});
+                setTimeout(function () {
+                    location.reload();
+                },1000);
+            },
+            error:function(e){
+                console.log(e);
+            }
+        });
+    }
+    function saveRoleInfo(){
+        var list="";
+        $("input[name=admin]:checked").each(function(){
+            list+=$(this).val()+",";
+        });
+        console.log(list);
+        $.ajax({
+            type:"post",
+            data:{list:list,id:$("input[name=id]").val()},
+            url:root+"/system/addRoleById",
+            success:function(data){
+                if(data=='success')
+                    layer.msg("更新成功",{shade:0.3});
+                else
+                    layer.msg("更新失败",{shade:0.3});
+                setTimeout(function () {
+                    location.reload();
+                },1000);
+            },
+            error:function(e){
+                console.log(e);
+            }
+        });
+    }
+</script>
+</body>
+</html>

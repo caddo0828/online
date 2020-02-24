@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新增模块页面</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+</head>
+<body>
+    <div class="container">
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">父/子模块</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="switch" lay-skin="switch" lay-text="父|子" checked  lay-filter="switchTest"/>
+                </div>
+            </div>
+            <div class="layui-form-item parent">
+                <label class="layui-form-label">父模块名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="p_name" placeholder="请输入名称" style="width: 200px" class="layui-input"/>
+                </div>
+            </div>
+            <div class="layui-form-item child">
+                <label class="layui-form-label">子模块名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="s_name" placeholder="请输入名称" style="width: 200px" class="layui-input"/>
+                </div>
+            </div>
+            <div class="layui-form-item child">
+                <label class="layui-form-label">选择父模块</label>
+                <div class="layui-input-block" style="width: 200px">
+                    <select name="pmodules" style="width: 200px">
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item child">
+                <label class="layui-form-label">URL路径</label>
+                <div class="layui-input-block">
+                    <input type="text" name="url" placeholder="URL" style="width: 200px" class="layui-input"/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="formDemo">确认添加</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script th:inline="javascript">
+        var root=[[${root}]];
+        var $;
+        layui.use(['form','layer'],function(){
+            var form=layui.form;
+            var layer=layui.layer;
+            $=layui.$;
+            var p_modules=JSON.parse(decodeURIComponent([[${modules}]]));
+            $(".child").hide();
+            form.on('switch(switchTest)', function (data) {
+                console.log(data);
+                if(!data.elem.checked){
+                    $(".parent").hide();
+                    $(".child").show();
+                }else{
+                    $(".child").hide();
+                    $(".parent").show();
+                }
+            });
+            for(var i=0;i<p_modules.length;i++){
+                var html="<option value='"+p_modules[i].t_p_id+"'>"+p_modules[i].t_p_name+"</option>";
+                $("select[name=pmodules]").append(html);
+            }
+            form.render();
+            form.on('submit(formDemo)', function(data){
+                $.ajax({
+                    type: 'post',
+                    url:root+"/system/addmodulesInfo",
+                    data: data.field,
+                    success: function(data){
+                        if(data=='success'){
+                            window.parent.parent.layer.alert('添加成功');
+                            window.parent.closeIndex();
+                        }else if(data=='error'){
+                            window.parent.parent.layer.alert('添加失败');
+                        }
+                    },
+                    error:function(e){
+                        consolog.log(e);
+                    }
+                })
+                return false;
+            });
+        });
+
+    </script>
+</body>
+</html>

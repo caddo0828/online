@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新增用户</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <style>
+        .container{
+            margin-top:20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <form class="layui-form" action="" lay-filter="example">
+        <div class="layui-form-item">
+            <label class="layui-form-label">用户名：</label>
+            <div class="layui-input-block">
+                <input style="width:300px;" type="text" name="username" autocomplete="off" placeholder="请输入标题" class="layui-input" lay-verify="required">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">密码：</label>
+            <div class="layui-input-block">
+                <input style="width:300px;" type="password" name="password" placeholder="请输入密码" autocomplete="off" class="layui-input" lay-verify="required">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">邮箱：</label>
+            <div class="layui-input-block">
+                <input style="width:300px;" type="text" name="email" placeholder="请输入邮箱" autocomplete="off" class="layui-input" lay-verify="required|email">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">选择角色：</label>
+            <div style="width:300px;" class="layui-input-block">
+                <select name="role" lay-verify="required">
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button type="submit" lay-submit class="layui-btn" lay-filter="*" >立即提交</button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+<script th:inline="javascript">
+    var root=[[${root}]];
+    var roles=[[${roles}]];
+    roles=JSON.parse(decodeURIComponent(decodeURIComponent(roles)));
+    layui.use(['form'],function(){
+        var form=layui.form;
+        var $=layui.$;
+        $.each(roles,function(index,element){
+            $("select[name=role]").append("<option value='"+element.role_id+"'>"+element.role_name+"</option>")
+        });
+        form.render("select");
+        $("select[name=role]").css("width","300px");
+
+        form.on('submit(*)', function(data){
+            $.ajax({
+                type:"post",
+                url:root+"/system/addUserInfoData",
+                data:data.field,
+                dataType:"text",
+                success:function(result){
+                    if(result=="success") {
+                        layer.msg("新增成功", {icon: 1, time: 1000, shade: 0});
+                        setTimeout(function(){
+                            window.parent.location.reload();
+                        },1000)
+                    }
+                    else if(result=="fail") {
+                        layer.msg("新增失败", {icon: 2, time: 1000, shade: 0});
+                    }
+                },
+                error:function(e){
+                    console.log(e);
+                    layer.msg('接口异常',{shade:0.2,time:1000});
+                }
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    });
+
+</script>
+</html>

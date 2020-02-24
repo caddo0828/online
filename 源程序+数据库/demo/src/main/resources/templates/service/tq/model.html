@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>商品类型</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <style>
+        .container{
+            margin: 5px auto;
+            width: 98%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <button class="layui-btn" onclick="add()">新增</button>
+    <table id="model" lay-filter="model"></table>
+</div>
+</body>
+<script th:inline="javascript">
+    var root=[[${root}]];
+    var layer;
+    var index;
+    var tableIndex;
+    layui.use(['table','layer'],function(){
+        var table=layui.table;
+        layer=layui.layer;
+        var $=layui.$;
+        tableIndex=table.render({
+            elem:"#model",
+            url:root+"/tq/getModelGoods",
+            cols:[
+                [
+                    {type:'numbers', width:'4%'},
+                    {field:"id",width:'10%',hide:true},
+                    {field:"model_name",width:'13%',title:"隶属类型"},
+                    {field:"name",width:'13%',title:"商品名称"},
+                    {field:"mark",width:'60%',title:"类型简介"},
+                    {field:'operation',width:'10%', title: '操作',templet: '#barDemo'}
+                ]
+            ],
+            page:true,
+            parseData:function (data) {
+                return {
+                    code:0,
+                    msg:'',
+                    count:data.total,
+                    data:data.data
+                }
+            }
+        });
+
+
+        table.on('tool(model)',function(obj){
+            switch (obj.event){
+                case 'edit':
+                    index=layer.open({
+                        type: 2,
+                        title: "修改商品类型信息",
+                        area: ['640px', '465px'],
+                        shade:0,
+                        content:root+"/tq/updateModelPage?id="+obj.data.id
+                    });
+                    break;
+                case 'del':
+                    $.ajax({
+                        type:"post",
+                        url:root+"/tq/deleteModelById",
+                        data:{id:obj.data.id},
+                        dataType:"text",
+                        success:function(result){
+                            if(result=='success')
+                                layer.msg("删除成功",{icon:1,time:1000});
+                            else if(result=='fail')
+                                layer.msg("删除失败",{icon:2,time:1000});
+                            setTimeout(function () {
+                                closeIndex();
+                            },1000)
+                        },
+                        error:function (e) {
+                            console.log(e);
+                        }
+                    })
+                    break;
+            }
+        });
+
+    });
+
+
+    function add(){
+        index=layer.open({
+            type: 2,
+            title: "新增商品类型",
+            area: ['960px', '750px'],
+            shade:0,
+            content:root+"/tq/addModelPage"
+        });
+    }
+
+    function closeIndex(){
+        layer.close(index);
+        tableIndex.reload();
+    }
+</script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>用户管理</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <style>
+        .container{
+            margin: 0px auto;
+            width: 98%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <table id="user" lay-filter="user"></table>
+</div>
+</body>
+<script th:inline="javascript">
+    var root=[[${root}]];
+    layui.use(['table','layer'],function(){
+        var table=layui.table;
+        var layer=layui.layer;
+        var $=layui.$;
+        var height=$(window).height()*0.9;
+        var userTable=table.render({
+            elem:'#user',
+            url:root+'/system/getUserInfoData',
+            toolbar: '#toolbarDemo',
+            cellMinWidth:'80px',
+            height:height,
+            cols:[
+                [
+                    {type:'numbers', width:'4%'},
+                    {type: 'checkbox', width:'4%'},
+                    {field:"id",width:'10%',hide:true},
+                    {field:"username",width:'10%',title:'用户名称'},
+                    {field:"email",width:'20%',title:'用户邮箱'},
+                    {field:"create_time",width:'15%',title:'创建时间'},
+                    {field:"image",width:'10%',title:'头像',templet:function(d){
+                        return "<div><image width='30px' src='"+root+"/img/"+d.image+"' /></div>";
+                        }},
+                    {field:"role_id",width:'10%',title:'角色名称',hide:true},
+                    {field:"role_name",width:'10%',title:'角色名称'},
+                    {field:'operation', width:'15%', title: '操作',templet: '#barDemo'}
+                ]
+            ],
+            page: true,
+            parseData:function(result){
+                return {
+                    code:0,
+                    msg:"",
+                    count:result.total,
+                    data:result.data
+                };
+            }
+
+        });
+
+        //监听行工具事件
+        table.on('tool(user)',function(obj){
+            var data = obj.data;
+            if(obj.event=='del'){
+                layer.confirm('真的删除行么',{icon: 3, title:'提示'}, function(){
+                    $.ajax({
+                        type:"post",
+                        url:root+"/system/delUser",
+                        data:{id:data.id},
+                        dataType:"text",
+                        success:function(result){
+                            if(result=="success"){
+                                layer.msg('删除成功', {icon: 1,shade:0.3,time:500});
+                                userTable.reload({});
+                            }else if(result=="fail"){
+                                layer.msg('删除失败', {icon: 1,shade:0.3,time:500});
+                            }else{
+                                layer.msg('接口异常', {icon: 1,shade:0.3,time:500});
+                            }
+                        },
+                        error:function(e){
+                            layer.alert(e);
+                        }
+                    })
+                });
+            }else if(obj.event=='edit'){
+                layer.open({
+                    type: 2,
+                    title: "修改用户信息",
+                    area: ['640px', '465px'],
+                    shade:0,
+                    content:root+"/system/updateUser?id="+data.id
+                });
+            }
+        });
+        //工具栏事件监听
+        table.on('toolbar(user)', function(obj){
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch(obj.event){
+                case 'insertData':
+                    layer.open({
+                        type: 2,
+                        title: "新增用户信息",
+                        area: ['640px', '465px'],
+                        shade:0,
+                        content:root+"/system/addUserInfo"
+                    });
+                    break;
+                case 'getCheckData':
+                    var data = checkStatus.data;
+                    layer.alert(JSON.stringify(data));
+                    break;
+                case 'getCheckLength':
+                    var data = checkStatus.data;
+                    layer.msg('选中了：'+ data.length + ' 个');
+                    break;
+                case 'isAll':
+                    layer.msg(checkStatus.isAll ? '全选': '未全选');
+                    break;
+            };
+        });
+
+    });
+
+</script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="insertData" >新增</button>
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
+        <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
+    </div>
+</script>
+</html>

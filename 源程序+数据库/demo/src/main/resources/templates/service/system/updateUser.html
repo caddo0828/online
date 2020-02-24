@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>更新用户基本信息</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <style>
+        .container{
+            margin-top:20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <form class="layui-form" action="" lay-filter="example">
+        <input id="id" name="id" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label">用户名：</label>
+            <div class="layui-input-block" style="width:250px;">
+                <input type="text" name="username" autocomplete="off" placeholder="请输入标题" class="layui-input" lay-verify="required">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">新密码：</label>
+            <div class="layui-input-block" style="width:250px;">
+                <input type="text" name="password" placeholder="请输入密码" autocomplete="off" class="layui-input" lay-verify="required">
+            </div>
+
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">邮箱：</label>
+            <div class="layui-input-inline" style="width:250px;">
+                <input type="text" autocomplete="off" name="email" class="layui-input" disabled />
+            </div>
+            <div class="layui-form-mid layui-word-aux">禁止修改</div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">选择角色：</label>
+            <div style="width:250px;" class="layui-input-block">
+                <select name="role" lay-verify="required">
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">创建时间：</label>
+            <div class="layui-input-inline" style="width:250px;">
+                <input type="text" autocomplete="off" name="create_time" class="layui-input" disabled />
+            </div>
+            <div class="layui-form-mid layui-word-aux">禁止修改</div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">头像：</label>
+            <div class="layui-input-inline" style="width:400px;">
+                <img id="image" width="40px" th:src="@{/img/}" alt="头像">
+                <button style="margin-left: 20px;" type="button" class="layui-btn layui-btn-normal" id="file">选择头像</button>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button type="submit" id="test9" lay-submit class="layui-btn" lay-filter="*" >确认修改</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+</body>
+<script th:inline="javascript">
+    var root=[[${root}]];
+    var roles=[[${roles}]];
+    var user=[[${userInfo}]];
+    roles=JSON.parse(decodeURIComponent(decodeURIComponent(roles)));
+    user=JSON.parse(decodeURIComponent(decodeURIComponent(user)));
+    layui.use(['form','util','upload'],function(){
+        var form=layui.form;
+        var util=layui.util;
+        var upload=layui.upload;
+        var $=layui.$;
+        //赋值角色下拉框
+        $.each(roles,function(index,element){
+            $("select[name=role]").append("<option value='"+element.role_id+"'>"+element.role_name+"</option>")
+        });
+        form.render("select");
+        $("select[name=role]").css("width","300px");
+        //表单赋值
+        form.val("example",{
+            id:user.id,
+            username:user.username,
+            email:user.email,
+            role:user.role_id,
+            create_time:util.toDateString(user.create_time, "yyyy-MM-dd HH:mm:ss")
+        });
+        $("#image").attr("src",$("#image").attr("src")+"/"+user.image);
+        $("#image").css("cursor","pointer");
+
+        //图片上传
+        upload.render({
+            elem: '#file'
+            ,url: root+'/user/fileUpload'
+            ,auto: false
+            ,data:{email:user.email}
+            ,bindAction: '#test9'
+            ,done: function(res){
+                console.log(res)
+            }
+        });
+        //更新用户信息
+        form.on('submit(*)',function(data){
+            console.log(data.field);
+            $.ajax({
+                type:"post",
+                url:root+"/system/updateUserInfoData",
+                data:data.field,
+                dataType:"text",
+                success:function(result){
+                    if(result=='success'){
+                        layer.msg("修改成功", {icon: 1, time: 1000, shade: 0});
+                        setTimeout(function(){
+                            window.parent.location.reload();
+                        },1000)
+                    }else if(result=='fail'){
+                        layer.msg("修改失败", {icon: 2, time: 1000, shade: 0});
+                        location.reload();
+                    }
+                },
+                error:function(e){
+                    console.log(e);
+                    layer.msg('接口异常',{shade:0.2,time:1000});
+                }
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        })
+    });
+</script>
+</html>

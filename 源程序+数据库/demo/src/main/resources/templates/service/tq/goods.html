@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>货物库存页面</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <script src="../js/echarts.all.js" th:src="@{/js/echarts.min.js}"></script>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .container{
+            margin: 0px auto;
+        }
+        .title{
+            margin: auto;
+            font-size: 28px;
+            text-align: center;
+        }
+        .echarts{
+            text-align: center;
+        }
+
+        #chart1{
+            width: 45%;
+            height: 600px;
+            display: inline-block;
+        }
+        #chart2{
+            width: 45%;
+            height: 600px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="title">
+        <span>货物库存</span>
+    </div>
+    <div class="echarts">
+        <div id="chart1"></div>
+        <div id="chart2"></div>
+    </div>
+</div>
+</body>
+<script th:inline="javascript">
+    var root=[[${root}]];
+    var $;
+    var chart1 = echarts.init(document.getElementById('chart1'));
+    var GoodOption = {
+        title: {
+            text: '商品类型',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: "item",
+            formatter: '{a} <br/> {b} <br/> 数量：{c} ({d}%)'
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left',
+            data: []
+        },
+        series: [
+            {
+                name:"商品类型",
+                type: 'pie',
+                data: []
+            }
+        ]
+    };
+    var chart2 = echarts.init(document.getElementById('chart2'));
+    var PurOption = {
+        title: {
+            text: '供应商剩余',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: "item",
+            formatter: '{a} <br/> {b} <br/> 数量：{c} ({d}%)'
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'right',
+            data: []
+        },
+        series: [
+            {
+                name:"供应商",
+                type: 'pie',
+                data: []
+            }
+        ]
+    };
+    layui.use(['layer'],function () {
+        $=layui.$;
+        $.ajax({
+            type:"post",
+            url:root+"/order/getRepertoryNumber",
+            dataType:"json",
+            success:function (result) {
+                var titleName=new Array();
+                $.each(result,function (index,element) {
+                    titleName.push(element.name);
+                });
+                GoodOption.legend.data=titleName;
+                GoodOption.series[0].data=result;
+                chart1.setOption(GoodOption);
+            },
+            error:function (e) {
+                console.log(e);
+            }
+        });
+        $.ajax({
+            type:"post",
+            url:root+"/order/getRepertorySup",
+            dataType:"json",
+            success:function (result) {
+                var titleName=new Array();
+                $.each(result,function (index,element) {
+                    titleName.push(element.name);
+                });
+                PurOption.legend.data=titleName;
+                PurOption.series[0].data=result;
+                chart2.setOption(PurOption);
+            },
+            error:function (e) {
+                console.log(e);
+            }
+        })
+    });
+</script>
+</html>

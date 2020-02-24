@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>角色管理</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" th:href="@{/layui/css/layui.css}">
+    <script src="../layui/layui.js" th:src="@{/layui/layui.js}"></script>
+    <style>
+        .container {
+            margin: 0px auto;
+            width: 98%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <table class="layui-hide" id="test" lay-filter="test"></table>
+</div>
+<script th:inline="javascript">
+    var root=[[${root}]];
+    layui.use(['table','form','layer'],function(){
+        var table=layui.table;
+        var form=layui.form;
+        var layer=layui.layer;
+        var $=layui.$;
+        var height=$(window).height()*0.9;
+        var dataTable=table.render({
+            elem: '#test'
+            ,url:root+'/system/getRolesInfo'
+            ,toolbar: '#toolbarDemo'
+            ,height:height
+            ,cols: [
+                [
+                    {type:'numbers', width:'4%'}
+                    ,{type: 'checkbox', width:'4%'}
+                    ,{field:'role_name', width:'15%', title: '角色名称'}
+                    ,{field:'role_id', hide:true}
+                    ,{field:'create_time', width:'30%', title: '创建时间'}
+                    ,{field:'num', width:'8%', title: '人数'}
+                    ,{field:'status', width:'24%', title: '是否锁定',templet: '#checkboxTpl'}
+                    ,{field:'operation', width:'15.5%', title: '操作',templet: '#barDemo'}
+                ]
+            ]
+            ,page: true
+            ,parseData:function(data){
+                return {
+                    "code": 0, //解析接口状态
+                    "msg": "", //解析提示文本
+                    "count": data.total, //解析数据长度
+                    "data": data.data //解析数据列表
+                };
+            }
+        });
+
+        form.on('checkbox(lockDemo)', function(obj){
+            var status;
+            if(obj.elem.checked==true)
+                status=1;
+            else
+                status=0;
+            var id=$(obj.elem).parent().parent().parent().find("td").eq(3).text();
+            $.ajax({
+                type:"post",
+                url:root+"/system/updateRoleStatus",
+                data:{status:status,id:id},
+                dataType:"text",
+                success:function(result){
+                    if(result=='success'){
+                        layer.alert("修改成功",{icon:1});
+                        dataTable.reload({});
+                    }else if(result=='fail'){
+                        layer.alert("修改失败",{icon:2});
+                        dataTable.reload({});
+                    }else{
+                        layer.alert("接口异常",{icon:3});
+                    }
+                },
+                error:function(e){
+                    layer.alert(e);
+                }
+            });
+        });
+
+        table.on('toolbar(test)', function(obj){
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch(obj.event){
+                case 'insertData':
+                    layer.prompt({title: '输入角色名称', formType: 0}, function(pass, index){
+                        $.ajax({
+                            type:"post",
+                            url:root+"/system/addRole",
+                            data:{name:pass},
+                            dataType:"text",
+                            async:false,
+                            success:function(result){
+                                if(result=="success"){
+                                    layer.close(index);
+                                    layer.msg('新增成功', {icon: 1,shade:0.3,time:1000});
+                                    dataTable.reload({});
+                                }else if(result=="fail"){
+                                    layer.msg('新增失败', {icon: 1,shade:0.3,time:1000});
+                                }else{
+                                    layer.msg('接口异常', {icon: 1,shade:0.3,time:1000});
+                                }
+                            },
+                            error:function(e){
+                                layer.alert(e);
+                            }
+                        });
+                    });
+                    break;
+                case 'getCheckData':
+                    var data = checkStatus.data;
+                    layer.alert(JSON.stringify(data));
+                    break;
+                case 'getCheckLength':
+                    var data = checkStatus.data;
+                    layer.msg('选中了：'+ data.length + ' 个');
+                    break;
+                case 'isAll':
+                    layer.msg(checkStatus.isAll ? '全选': '未全选');
+                    break;
+            };
+        });
+
+        //监听行工具事件
+        table.on('tool(test)', function(obj){
+            var data = obj.data;
+            if(obj.event === 'del'){
+                layer.confirm('真的删除行么',{icon: 3, title:'提示'}, function(index){
+                    $.ajax({
+                        type:"post",
+                        url:root+"/system/delRole",
+                        data:{id:obj.data.role_id},
+                        dataType:"text",
+                        async:false,
+                        success:function(result){
+                            if(result=="success"){
+                                obj.del();
+                                layer.close(index);
+                                layer.msg('删除成功', {icon: 1,shade:0.3,time:500});
+                                dataTable.reload({});
+                            }else if(result=="fail"){
+                                layer.msg('删除失败', {icon: 1,shade:0.3,time:500});
+                            }else{
+                                layer.msg('接口异常', {icon: 1,shade:0.3,time:500});
+                            }
+                        },
+                        error:function(e){
+                            layer.alert(e);
+                        }
+                    });
+                });
+            } else if(obj.event === 'edit'){
+                layer.prompt({
+                    formType: 0
+                    ,value: data.role_name
+                    ,title:"提示"
+                }, function(value, index){
+                    $.ajax({
+                        type:"post",
+                        url:root+"/system/updateRole",
+                        data:{newName:value,id:obj.data.role_id},
+                        dataType:"text",
+                        success:function(result){
+                            if(result=='success'){
+                                layer.close(index);
+                                layer.alert("修改成功",{icon:1});
+                                dataTable.reload({});
+                            }else if(result=='fail'){
+                                layer.close(index);
+                                layer.alert("修改失败",{icon:2});
+                            }else{
+                                layer.close(index);
+                                layer.alert("接口异常",{icon:3});
+                            }
+                        },
+                        error:function(e){
+                            layer.alert(e);
+                        }
+                    });
+
+                });
+            }
+        });
+
+    });
+
+</script>
+
+<script type="text/html" id="checkboxTpl">
+    <input type="checkbox" name="lock" value="{{d.status}}" title="锁定" lay-filter="lockDemo" {{ d.status == 1 ? 'checked' : '' }}/>
+</script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="insertData" >新增</button>
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
+        <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
+    </div>
+</script>
+</body>
+</html>

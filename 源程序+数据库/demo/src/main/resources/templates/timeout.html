@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>session过期</title>
+</head>
+<body>
+<p>
+    session过期......<span id="mill">3</span>秒后自动跳转，未跳转请<a href="#" th:href="@{/toLogin}">单击</a>
+</p>
+<script type="application/javascript" src="js/jquery.js" th:src="@{/js/jquery.js}"></script>
+<script>
+    setInterval(function(){
+        var mills=$("#mill").text();
+        mills=parseInt(mills)-1;
+        $("#mill").text(mills);
+        if(mills==0){
+            location.href=$("a").attr("href");
+        }
+    },1000)
+</script>
+</body>
+</html>
