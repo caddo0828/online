@@ -83,7 +83,7 @@ start_time   供应时间
 end_time     结束时间
 sup_name     供应商名称
 sup_number   供应商编号
-sup_price    供应价格
+price    供应价格
 is_accept    是否已收货，0  1  2 
 
 
